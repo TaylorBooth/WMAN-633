@@ -1,0 +1,227 @@
+---
+title: "Homework 2"
+author: "Taylor Booth"
+date: "February 17th, 2021"
+output: html_document
+---
+
+```{r, echo = T}
+  
+beachdata <- read.csv("beach.csv")
+
+head(beachdata)
+
+summary(beachdata)
+
+```
+1. This is my answer to question 1:
+  
+```{r, echo = T}
+
+fit <- lm(OpenBeach ~ Year * BeachID, data = beachdata)
+y_obs <- beachdata$OpenBeach
+  BA <- unique(beachdata$Year[beachdata$BeachID == 'A'])
+  BB <- unique(beachdata$Year[beachdata$BeachID == 'B'])
+  BC <- unique(beachdata$Year[beachdata$BeachID == 'B'])
+  
+betas <- coef(fit)
+  betas
+  
+
+BAfit = betas[1] + betas[2] * BA
+BAfit
+
+BBfit = betas[1] + betas[2] * BB + betas[3]*1 + betas[5] * BB*1
+BBfit
+
+BCfit = betas[1] + betas[2] * BC + betas[4]*1 + betas[6] * BC*1
+BCfit
+
+fit2 <- c(BAfit, BBfit, BCfit)
+fit2
+
+residuals <- y_obs - fit2
+residuals
+
+#plot histogram
+hist(residuals)
+
+
+summary(residuals)
+summary(fit)
+
+
+```
+Our residuals appear to be reasonably gaussian with some deviation from true gaussian at the 
+upped end of the histogram but exhbit a normal distribution.
+
+
+
+
+2. This is my answer to question 2
+```{r, echo + T}
+summary(fit)
+
+#Coefficient estimates
+
+b0 <- coef(fit)[1]
+b0
+b1 <- coef(fit)[2]
+b1
+b2 <- coef(fit)[3]
+b2
+b3 <- coef(fit)[4]
+b3
+b4 <- coef(fit)[5]
+b4
+b5 <- coef(fit)[6]
+b5
+
+#estimate standard error
+b0SE <- summary(fit)[['coefficients']]['(Intercept)', 'Std. Error']
+b0SE
+
+b1SE <- summary(fit)[['coefficients']]['Year', 'Std. Error']
+b1SE
+
+b2SE <- summary(fit)[['coefficients']]['BeachIDB', 'Std. Error']
+b2SE
+
+b3SE <- summary(fit)[['coefficients']]['BeachIDC', 'Std. Error']
+b3SE
+
+b4SE <- summary(fit)[['coefficients']]['Year:BeachIDB', 'Std. Error']
+b4SE
+
+b5SE <- summary(fit)[['coefficients']]['Year:BeachIDC', 'Std. Error']
+b5SE
+
+#test statistic
+b <- 0
+test0 <- ((b0 - b)/b0SE)
+test0
+
+test1 <- ((b1 - b)/b1SE)
+test1
+
+test2 <- ((b2 - b)/b2SE)
+test2
+
+test3 <- ((b3 - b)/b3SE)
+test3
+
+test4 <- ((b4 - b)/b4SE)
+test4
+
+test5 <- ((b5 - b)/b5SE)
+test5
+
+
+#verify by comparison
+ summary(fit)
+
+test0
+test1
+test2
+test3
+test4
+test5
+
+
+```
+3. This is my answer to question 3:
+```{r, echo = T}
+
+DF <-  nrow(beachdata) - 6
+
+#calc pvalues
+
+pv0 <- pt(-1 * abs(test0), df = DF) + (1 - pt(abs(test0), df = DF))
+pv0
+
+pv1 <- pt(-1 * abs(test1), df = DF) + (1 - pt(abs(test1), df = DF))
+pv1
+pv2 <- pt(-1 * abs(test2), df = DF) + (1 - pt(abs(test2), df = DF))
+pv2
+pv3 <- pt(-1 * abs(test3), df = DF) + (1 - pt(abs(test3), df = DF))
+pv3
+pv4 <- pt(-1 * abs(test4), df = DF) + (1 - pt(abs(test4), df = DF)) 
+pv4
+pv5 <- pt(-1 * abs(test5), df = DF) + (1 - pt(abs(test5), df = DF)) 
+pv5
+
+
+#verify
+summary(fit)
+pv0
+pv1
+pv2
+pv3
+pv4
+pv5
+
+```
+   The null hypothesis is that our betas will equal zero
+
+H0: b0=0, b1=0, b2=0, b3=0, b4=0, b5=0
+
+Ha: b0 /=0, b1 /=0, b2/=0, b3/=0, b4/=0, b5/=0
+
+We reject the null hypothesis all of the p-values fall below our alpha value (0.05). P-value = 0.000; all intercepts
+
+
+4. This is my answer to question 4:
+  
+Null hypothesis 
+
+h0: b_rn = -60
+ha: b_rn > -60
+  
+``` {r, echo + T}
+
+  # Test Statistic                   
+
+testi <- (coef(fit)[2] - 60) / summary(fit) [['coefficients']]['Year', 'Std. Error']
+testi
+
+# P Value
+DF
+pt(-1 * abs(testi), df = 56)
+
+
+```
+With an alpha value = 0.05, we reject the null hypothesis (p-value = 0.0000, t-stat = -61.62812, df = 56)
+
+
+
+5. This is my answer to question 5:
+  
+``` {r, echo + T}
+  
+#Beach A  
+ROC = betas[1] + betas[2] * 1992
+ROC1 = betas[1] + betas[2] * 1993
+
+ROC1-ROC
+= -18.36491
+
+#Beach B
+ROC2 = betas[1] + betas[2] * 1992 + betas[3]*1 + betas[5] * 1992 * 1
+ROC3 = betas[1] + betas[2] * 1993 + betas[3]*1 + betas[5] * 1993 * 1
+
+ROC3-ROC2
+= -1.322145
+
+#Beach C
+ROC4 = betas[1] + betas[2] * 1992 + betas[4]*1 + betas[6] * 1992 * 1
+ROC5 = betas[1] + betas[2] * 1993 + betas[4]*1 + betas[6] * 1993 * 1
+
+ROC5-ROC4
+= -3.993592
+
+```
+#####Answer
+#Beach A is decreasing at a rate of 18.36ha per year
+#Beach B is decreasing at a rate of 1.32ha per year
+#Beach C is decreasing at a rate of 3.99ha per year
+  
