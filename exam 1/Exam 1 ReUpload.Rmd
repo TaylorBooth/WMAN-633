@@ -1,0 +1,211 @@
+---
+title: "Exam 1"
+author: "Taylor Booth"
+date: "February 17, 2021"
+output:.html
+---
+
+1. This is my answer to question 1
+
+```{r, echo = T}
+
+dat <- read.csv("Exam 1 Data.csv")
+head(dat)
+
+```
+
+2. This is my answer to question 2
+
+```{r, echo = T}
+
+fit <- lm(y ~ x1 * x2 + x3, data = dat)
+summary(fit)
+fit
+
+```
+
+3. This is my answer to question 3
+
+
+```{r, echo = T}
+
+#pull coeff
+betas <- coef(fit)
+betas
+
+#interpret effect of variable x1 when x2 = -1
+
+#write out equation
+#y = ??0 + ??1x1 + ??2x2 + ??3b + ??4c + ??5x1x2
+
+#rewrite
+#y = ??0 + X1(??1 + ??5x2) + ??2x2 + ??3b + ??4c 
+
+#solve
+betas[2] + betas[6] * -1
+
+#x1 = .1108589
+
+```
+The change in y associated with a 1 unit change in x1 when x2 =-1 is 
+
+x1 = .1108589
+
+
+
+
+4. This is my answer to question 4
+
+```{r, echo = T}
+
+# interpret effect of variable x1 when x2 = 1
+#y = ??0 + ??1x1 + ??2x2 + ??3b + ??4c + ??5x1x2
+
+#rewrite
+#y = ??0 + X1(??1 + ??5x2) + ??2x2 + ??3b + ??4c 
+
+#solve
+betas[2] + betas[6] * 1
+
+#x1 = .4100783
+
+```
+The change in y associated with a 1 unit change in x1 when x2 = 1 is 
+
+x1 = .4100783
+
+
+
+
+5. This is my answer to question 5
+
+
+```{r, echo = T}
+
+#interpret the effects of variable x3
+betas
+betas[4]
+betas[5]
+
+```
+The difference in y (when all other variables held constant) between category b and a is -1.627162195
+
+The difference in y (when all other variables held constant) between category c and a is 0.002504032
+
+
+
+
+6. This is my answer to question 6
+
+```{r, echo = T}
+
+# first 5 dummy variables
+cbind(dat$x3[1:5],
+      ifelse(dat$x3 == 'b', 1, 0)[1:5],
+      ifelse(dat$x3 == 'c', 1, 0)[1:5])
+
+##     [,1] [,2] [,3]
+##[1,] "b"  "1"  "0" 
+##[2,] "c"  "0"  "1" 
+##[3,] "b"  "1"  "0" 
+##[4,] "c"  "0"  "1" 
+##[5,] "c"  "0"  "1"
+
+
+```
+R is creating k-1 dummy variables. Where k is the number of levels (a,b,c) in your categorical variable (x3).
+Because we have 3 levels r creates (3-1) = 2 dummy variables. A is set aside as a reference variable,
+
+b is a dummy variable that equals 1 if a factor level is b and equals zero otherwise. Column 2 ([,2]) denotes
+the factor level of b. A 1 indicates the factor level is b while 0 indicates factor level is not b.
+
+c is a dummy variable that also equals 1 if a factor level is c and otherwise equals zero. Column 3 [,3] denotes
+the factor level of c. A 1 indicates the factor level is c while 0 indicates factor level is not c.
+
+If a factor level value for b or c is not detected (column 2 and 3 = 0) then it is categorized as group a.
+
+
+
+
+7. This is my answer to question 7
+
+
+```{r, echo = T}
+
+###Derive the test statistic and p-value associated with interaction between x1 and x2.
+
+
+# test statistic
+teststat <- coef(fit)[6] / summary(fit)[['coefficients']][6, 2]
+teststat; summary(fit)[['coefficients']][6, 3]
+
+# test statistic x1:x2 = 1.664819
+
+# p-value
+
+pv <- pt(-1 * abs(teststat), df = 94) + (1 - pt(abs(teststat), df = 94))
+pv
+
+summary(fit)[['coefficients']][6, 4]
+
+#p value x1:x2 = .09927881
+
+
+```
+#what is the null hypothesis assumed by the lm() funtion? Do we reject or fail to reject this null hypothesis?
+The null hypothesis assumed by lm() is that the slope coefficient associated with variable x1:x2 = 0.
+
+We fail to reject the null hypothesis because our p-value is greater than our significane level of >0.05 
+
+
+
+
+8. This is my answer to question 8
+
+Fix o2 = 1, and (mean) ?? : (8). Evaluate the probablity density at each of your 3 realizations
+
+```{r, echo = T}
+  
+  y <- c(3, 8, 7)
+
+## y / mean / o2
+
+dnorm(y, 8, 1)
+
+```
+[1] 1.486720e-06   3.989423e-01    2.419707e-01
+
+
+
+
+9. This is my answer to question 9
+
+
+
+type 1 error is falsely rejecting a null hypothesis that is true
+
+
+p-value = the probablity of observing a more extreme value of a test statistic under the assumptions
+of the null hypothesis
+
+
+we only reject the null hypothesis if our pvalue is smaller than some pre-determined quantity (alpha) 
+the likelihood of committing a type 1 error is determined by the type 1 error probablity often (0.05) (alpha)
+
+If you have a p-value < .05 than you can say that you are 95% certain that
+you are not committing a type 1 error.
+
+
+```{r, echo = T}
+
+```
+
+
+10. This is my answer to question 10
+
+We are assuming that the regression coefficients of a linear model are normally distributed. 
+
+
+```{r, echo = T}
+
+```
