@@ -1,0 +1,51 @@
+---
+title: "Homework 3"
+author: "Taylor Booth"
+date: "February 26, 2021"
+---
+
+1. A Description of study system and experimental design
+
+  Catch and release mortality for many fish species has shown to be positively correlated with water temperature. Mortality rates for some freshwater fish can be as high as 80% during warm summer months. With the implications of climate change becoming more apparent with each passing year there is a need to evaluate the effects increased water temperatures will have on catch and release mortality of sport fish. Muskellunge are of particular interest in this regard as up to 97% of these fish are released by anglers.
+    
+  Muskellunge >30” were collected by electro-fishing from their natural habitat and then relocated to state hatchery rearing ponds. Ponds are 0.5 – 1.5 acres and have depths 4’ – 12’. The ponds source and pump water from rivers that have naturally occurring Muskellunge populations and water is continuously flowing through the ponds. Ponds are outfitted with mechanical aerators, continuous temperature loggers, and water quality is checked weekly (Nitrate, D.O., chlorine). Fish we’re acclimated in the pond mesocosms for no less than 1 month before being subjected to catch and release angling events. Half of the fish will be angled and the other half of the fish in the ponds will remain as controls. Angling events were conducted at temperatures >75F (24C) and video taped for past event data collection. Fish will then be observed for a 2 week period post-C&R event. 
+
+
+2. A list of questions you are potentially interested in addressing with the data
+
+  a.	What are the rates of Muskellunge C&R mortality at elevated summer temperatures? Control mortality rates?
+  b.	Does temperature influence C&R mortality of Muskellunge? 
+  c.	Does age and size of fish affect mortality rates?
+  d.	Does hooking location or fight/handling duration increase probability of C&R mortality?
+  e.	Are Reflex Action Mortality Predictors (RAMP) scores accurate estimates for instantaneous/delayed mortality rates?
+  
+  
+3.	A description of your data, including explicit reference to your response and potential predictor variables
+
+Predictor variables:
+  -	Temperature at time of catch
+  -	Cumulative 72 hr temperature post release
+  -	Angling duration (fight time, handling time)
+  -	Hooking location (Lip, Mouth, Gill, Esophagus)
+  -	Length / Weight / Age
+
+Response variables:
+  -	Dead / Alive
+  -	Instantaneous / Short Term / Delayed Mortality rates
+  -	RAMP score
+  
+  Before fish were released into the ponds each one had its total length, wet weight, and age recorded. Fish were then angled in a manner akin to experienced musky anglers. The amount of time from the setting of a hook on a fish until the angler is able to successfully capture the fish in a landing net will be considered the fight time. The amount of time it took the angler to remove the hooks from the fishes mouth, scan for a PIT tag, and then release the fish back into the water was considered handling time. At time of catch the location of where the fish was hooked was noted (Mouth, Gill, Esophagus, etc). At the time of release RAMP scores were given based presence/absence of reflex on a scale of 0-3. Reflexes included ability to maintain proper equilibrium and orientation, descending to depths, and bursting away with speed. RAMP scores have been significantly correlated with mortality in other freshwater fish species.
+  
+  Currently data collection is still on going and I am awaiting data from cooperating agencies and collaborators. At this time overall C&R mortality is at 37% and control mortality is 12%. RAMP scores have not been shown to be an accurate predictor for mortality. Fish length ranges from 30” – 51”, weights 4.2kg – 20.5kg, and ages 4 – 17 years. A sample of the data can be found below. 
+  
+  ```{r, echo = T}
+  
+  MuskyData <- read.table("SemesterProj WMAN 633.csv") 
+  head(MuskyData)
+  
+  ```
+
+
+4.	Anything unique or otherwise interesting about the dataset
+
+Muskellunge utilized in this study were collected and housed in 8 ponds across 5 different states from 12 different bodies of water (WV, VA, MD, NC, WI).
