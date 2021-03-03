@@ -1,0 +1,73 @@
+---
+title: "Homework 3"
+author: "Taylor Booth"
+date: "March 3, 2021"
+output: html_document
+---
+
+```{r, echo = T}
+dat <- read.csv("Homework 3 Data.csv")
+head(dat)
+```
+
+1. This is my answer to question 1
+```{r, echo = T}
+fit <- glm(y ~ x1 + x2, family = binomial, data = dat)
+summary(fit)
+```
+
+2. This is my answer to question 2
+```{r, echo = T}
+betas <- coef(fit)
+x1 <- plogis(betas[1] + betas[2]*0 + betas[3]*0)
+x1i <- plogis(betas[1] + betas[2]*1 + betas[3]*0)
+
+log((x1i / (1 -x1i)) / (x1 / (1-x1)))
+```
+# -0.167976
+for every 1 unit increase of x1 there is a -0.167976 change in the log odds of success
+
+
+3. This is my answer to question 3
+```{r, echo = T}
+x2 <- plogis(betas[1] + betas[2]*0 + betas[3]*0)
+x2i <- plogis(betas[1] + betas[2]*0 + betas[3]*1)
+
+log((x2i / (1-x2i)) / (x2 / (1-x2)))
+```
+#-.9679244
+
+for every 1 unit increase of x2 there is a -0.9679244 change in the log odds of success
+
+
+4. This is my answer to question 4
+```{r, echo = T}
+#### Wald Test x1
+tx1 <- betas[2] / summary(fit)[['coefficients']]['x1', 'Std. Error']
+summary(fit)[['coefficients']]['x1', 'z value']
+
+#### p-value
+2 * pnorm(-1 * abs(tx1), mean = 0, sd = 1)
+summary(fit)[['coefficients']]['x1', 'Pr(>|z|)']
+
+####wald Test x2b
+tx2b <- betas[3] / summary(fit)[['coefficients']]['x2b', 'Std. Error']
+summary(fit)[['coefficients']]['x2b', 'z value']
+
+# p-value
+2 * pnorm(-1 * abs(tx2b), mean = 0, sd = 1) 
+summary(fit)[['coefficients']]['x2b', 'Pr(>|z|)']
+```
+The p value for x1 is 0.6451594 at a significance level of 0.05 we fail to reject the null hypothesis
+
+The p value for x2 is 0.01926485 at a significance level of 0.05 we reject the null hypothesis
+
+
+
+5. This is my answer to question 5
+```{r, echo = T}
+xv <- seq(from = min(dat$x1), to = max(dat$x1), length.out = 100)
+y <- betas[1] + betas[2] * xv
+plot(x=xv, y = plogis(y), ylab = 'Prob Success', xlab = 'x1', 
+     cex.axis = 1.5, cex.lab = 1.5, type = 'l')
+```
