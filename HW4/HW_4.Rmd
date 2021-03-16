@@ -1,0 +1,98 @@
+---
+title: "Homework 4"
+author: "Taylor Booth"
+date: "March 16, 2021"
+output: html_document
+---
+
+1. Fit a poisson regression model that assumes expected count is an interactive function of variables x1 and x2
+
+```{r, echo = T}
+dat <- read.csv("Homework 4 Data.csv")
+head(dat)
+
+fit <- glm(y ~ x1*x2, family = poisson, data = dat)
+summary(fit)
+```
+
+
+2. Interpret the effect of variable x1 on the expected count when x2 is fixed at level 'b' verify your interpretation in R.
+
+
+Answer: When x2 is fixed at b, then x1 has a log difference of 0.379
+
+```{r, echo = T}
+betas <- coef(fit)
+betas
+
+cnt_x1 <- betas[1] + betas[3]
+cnt2_x1 <- betas[1] + betas[2] + betas[3] + betas[4]
+
+log(exp(cnt2_x1) / exp(cnt_x1))
+
+betas[2] + betas[4]
+```
+
+
+3. Interpret the effect of variable x2 on the expected count when x1 is fixed at 1. Verify your interpretation in R.
+
+
+Answer: x2 has a log difference of -0.578 when x1 is fixed t 1
+
+```{r, echo = T}
+cnt_x2 <- betas[1] + betas[2] * 1 
+cnt2_x2 <- betas[1] + betas[2] * 1 + betas[3] + betas[4]
+
+log(exp(cnt2_x2) / exp(cnt_x2))
+
+betas[3] + betas[4]
+```
+
+
+4. Predict the expected count +/-95% confidence intervals, over the observed range of values x1, assuming x2 is fixed at level 'b'
+
+```{r, echo = T}
+data2 <- data.frame(
+  x1 = seq(min(dat$x1), max(dat$x1), length.out = 100), 
+  x2 = factor(x = rep('b', times = 100)), levels = c('a','b'))
+
+predglm <- predict.glm(object = fit, newdata = data2, tpe = 'link', se.fit = T)
+  lower <- exp(predglm$fit - qnorm(0.975) * predglm$se.fit)
+  upper <- exp(predglm$fit + qnorm(0.975) * predglm$se.fit)
+  
+plot(y = exp(predglm$fit), x = data2$x1, xlab = 'x1', ylab = 'expec count', 
+     cex.axis = 1.5, cex.lab = 1.5, ylim = c(min(lower), max(upper)), type = 'l')
+lines(x = data2$x1, y = lower, lty = 2)
+lines(x = data2$x1, y = upper, lty = 2)
+```
+
+
+5. Predict the expected count, ± 95% confidence intervals, of levels "a" and "b", assuming x1 is fixed at
+it's mean.
+
+```{r, echo = T}
+lvla <- data.frame(x1 = mean(dat$x1), x2 = factor('a'), levels = c('a'))
+                  
+lvlb <- data.frame(x1 = mean(dat$x1), x2 = factor('b'), levels = c('b'))
+       
+pa <- predict.glm(object = fit, newdata = lvla, type = 'link', se.fit = T)
+exp(pa$fit)
+  lower_a <- exp(pa$fit - qnorm(0.975) * pa$se.fit)
+  lower_a
+  upper_a <- exp(pa$fit + qnorm(0.975) * pa$se.fit)
+  upper_a
+
+pb <- predict.glm(object = fit, newdata = lvlb, type = 'link', se.fit = T)
+exp(pb$fit)
+  lower_b <- exp(pb$fit - qnorm(0.975) * pb$se.fit)
+  upper_b <- exp(pb$fit + qnorm(0.975) * pb$se.fit)
+  
+ab <- data.frame(treatment = factor(c('a','b')), 
+                 response = c(6.519241, 2.102524), 
+                 lower = c(5.85, 1.72), 
+                 upper = c(7.27, 2.57))
+
+library(ggplot2)
+graph <- ggplot(ab, aes(treatment, response))
+graph + geom_pointrange(aes(ymin = lower, ymax = upper))
+```
