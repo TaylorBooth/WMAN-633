@@ -1,0 +1,125 @@
+---
+title: "Exam 2"
+author: "Ian Taylor Booth"
+date: "March 22, 2021"
+output: html_document
+---
+
+1. Import this dataset into R and inspect the first several rows of your data
+```{r, echo = T}
+dat <- read.csv("Exam 2 Data.csv")
+head(dat)
+```
+
+2.Fit a poisson model that assumes your response is a function of x1, x2, and x3. include an interaction betwene variable x1 and x2 only
+
+```{r, echo = T}
+fit_poiss <- glm(y ~ x1 * x2 + x3, family = poisson, data = dat)
+summary(fit_poiss)
+
+```
+
+3. Interpret the effect of variable x1 when x2=-1
+
+Answer: The log odds of success decrease by 0.746 for every 1 unit increase in x1
+```{r, echo = T}
+b <- coef(fit_poiss)
+b
+b[2] + b[6] * -1
+```
+
+4.
+```{r, echo = T}
+newdat <- data.frame(
+  x1 = seq(min(dat$x1), max(dat$x2), length.out = 100),
+  x2 = -1,
+  x3 = factor('a', levels = c('a', 'b', 'c'))
+)
+
+prd <- predict.glm(fit_poiss, newdat, se.fit = T)
+
+low <- plogis(prd$fit - qnorm(0.95) * prd$se.fit)
+high <- plogis(prd$fit + qnorm(0.95) * prd$se.fit)
+
+
+plot(x = newdat$x1, y = plogis(prd$fit), ylim = c(min(low), max(high)) , type = 'l')
+lines(x = newdat$x1, y = low, lty = 2)
+lines(x = newdat$x1, y = high, lty = 2)
+```
+
+5.Interpret the effect of variable x3
+
+Answer:The difference in log odds between category b and a is 0.375. The difference in log odds between category c and a is -0.883
+```{r, echo = T}
+summary(fit_poiss)
+```
+
+
+6.Use contrasts to evaluate the null hypothesis that the difference in log expected count between levels
+"b" and "c" = 0. Fix x1 and x2 at their means.
+
+Answer: Because of the small p-value (p = >2e-16) we would reject our null hypothesis that when x1 and x2 are ficed at their means
+        then expected count levels between 'b' and 'c' = 0.
+```{r, echo = T}
+library(multcomp)
+m <- matrix(c(0, mean(dat$x1), mean(dat$x2), 1, -1, 0), nrow = 1)
+cnt <- glht(fit_poiss, m)
+summary(cnt, test = adjusted('none'))
+
+```
+
+
+7.Derive the test statistic and p-value associated with the interaction between x1 and x2. What is the
+null hypothesis? Do we reject or fail to reject this null hypothesis? Defend your answer
+
+
+
+Answer: The null hypothesis is that $$ \beta_5 = 0 $$ we can rewrite the equation and evaluate the expression at x2 and at x2+1. The difference between these  expressions gives us:
+        $$
+        \begin{split}
+          y_{x_1 + 1, x_2+1} - y_{x_1, x_2+1} &= \beta_1 + \beta_5(x_2+1) = \beta_1 + \beta_5x_2 + \beta_5\\
+          (y_{x_1 + 1, x_2+1} - y_{x_1, x_2+1}) - (y_{x_1 + 1, x_2} - y_{x_1, x_2}) & = \beta_5
+        \end{split}
+        $$
+        
+Meaning $$ \beta_5 = 0 $$ is the change in the effective slope of x1 associated with a 1 unit change in x2. Given our small p-value (1.98e-08), 
+we reject the null hypothesis and can say there is evidence that the effect of variable x1 depends on the level of x2
+        
+```{r, echo = T}
+s <- summary(fit_poiss)[['coefficients']][, 2]
+b[6] / s[6]
+pnorm(-1 * abs(b[6] / s[6])) * 2
+
+```
+
+
+8.assume you have the following realizations of random variable Y : y = (1, 0)
+Further assume realizations of the random variable Y are Bernoulli distributed: y ∼ Bernoulli(p).
+What is the probability of observing each of these random variables assuming the log odds of success = -2?
+
+Answer: I know this is wrong idk how to input the log odds = -2 or where to input. But if the porbablity is .2 then....
+        The probablity of observing y = 1 is .2 and the probablity of observing y = 0 is .8
+```{r, echo = T}
+y <- c(1, 0)
+p <- -2
+dbinom((c(1, 0)), size = 1, p = .2)
+blik <- function(p, y){sum(dbinom(y, p, log = T))}
+blik
+```
+
+9.What is the "support" of a Bernoulli random variable? What are the acceptable values of it’s sole
+  parameter? To which quantity do we apply a link function, and why do we do this? What is the
+  principle link function we use in binomial (i.e., logistic) regression, and what it it’s inverse function?
+  
+  Answer: The support for Bernoulli random variable is the value or range of values of y, The acceptable values are 0 and 1,
+          a link function maps a positive real number across the whole real number line and we view it as the porbablity our random vairiable
+          will fit between 0 and 1. We use logit link function as the principal link function in binomial regression. The logit link funciton assumes
+          x is unbounded and p is unbounded between 0 and 1.The inverse logit link function maps a number on the real line to (0,1), x is unbounded, and p is   bounded bewteen 0 and 1, but in the inverse logit link funciton we are solving for p.
+          
+          
+          
+10. What is a fundamental assumption we make to derive inference when comparing two levels of a
+categorical random variable?
+
+Answer: We calculate the difference in y between a categorical variable and a reference variable we assume that these variables share an intercept
+
