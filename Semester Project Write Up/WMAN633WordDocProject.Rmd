@@ -1,0 +1,267 @@
+---
+title: "Evaluating Muskellunge (Esox masquinongy) Catch-and-Release Mortality at Elevated Summer Water Temperature’s"
+author: "Ian Taylor Booth"
+output: word_document
+---
+```{r include=FALSE}
+#Import Project data
+data <-read.csv('CRData3.csv')
+groupmort <- read.csv('Groupmort.csv')
+head(data)
+head(groupmort)
+
+#Alter data for analyses
+data$RAMP <- factor(data$RAMP) 
+data$HookLocation[data$HookLocation=="E"] <- "G"
+
+### Load relevant packages
+library(ggplot2)
+library(dplyr)
+library(AICcmodavg)
+library(ggpubr)
+library(sjPlot)
+```
+
+Introduction
+
+Angling for muskellunge (Esox masquinongy) has become widespread and increasingly popular throughout the fish’s range (Kerr, 2007). Current management tactics for muskellunge include high minimum harvest lengths (>1016mm), partially closed seasons, and catch-and-release regulations. Due to these tactics and angler sentiments up to 97% of muskellunge caught today are released by anglers assuming they will live and be caught again in the future. Previous research on catch-and-release mortality in muskellunge has indicated relatively low mortality rates (0%-4.2%), however, these studies were all conducted within the fish’s thermal optima and at temperatures <24°C (Landsman et al. 2011; Frohnaur et al., 2007; Strand, 1986). Muskellunge populations routinely experience temperatures >24°C during the summer months, especially in the fish southern range, representing a need to evaluate mortality rates at these elevated temperatures. We set out to quantify catch-and-release mortality rates in muskellunge >762mm at temperatures >24°C in a closed pond setting. Additionally, we aim to identify any factors that affect catch-and-release mortality rates such as angling duration, hooking location, and size/age. Muskellunge (n=100) were collected by electrofishing and stocked into 8 earthen/plastic lined flow-through ponds that are 0.5-1.5 acres in size and at densities of <20 fish/acre. Half (n=50) of the muskellunge were angled out of ponds utilizing specialized muskellunge fishing gear when water temperatures were >24°C and the other half (n=50) acted as controls. Fish were closely monitored for 2 weeks post catch-and-release event to assess mortality rates and behavior. We hope to inform managers and angler groups about any potential threats to muskellunge populations posed by catch-and-release angling during elevated water temperatures (>24°C). Increased mortality rates at high water temperatures may necessitate new regulations to help protect these populations during warm water periods.
+
+Methods
+
+Field Protocols and Data Collection
+
+  Fish were collected from wild populations by boat electrofishing. Total length (mm), weight (kg), aging structures, PIT Tag ID#, and sex was recorded during the initial collection events. Fish were transported to hatchery ponds in oxygenated live wells. Forage fish was also collected and stocked into the ponds to ensure sufficient prey availability for the Musky. Ponds were maintained by state hatchery staff/researchers and inspected daily to ensure safe water quality parameters and check for any fish that may have perished. Once temperatures in the ponds were >24°C angling events were conducted at the ponds. All angling events were recorded utilizing head mounted Go Pro video camera equipment for data collection and review post event. When a fish “hit” or bit a lure a timer was started to record angling duration. Angling duration was split into “fight time” (time spent angling the fish), and “net time” (time spent dehooking and handling while fish is in catch net). The time the fish spent out of the water was also recorded. After fish were landed in the catch net the individual identifying PIT # was recorded. Hooking location was then noted as being in the Esophagus (E), Gills (G), Tongue (T), or Mouth/Lips (L). Hooking wounds in the gills and esophagus has been shown to increase catch-and-release mortality rates in other fish species. Water temperature at time of catch was recorded using a YSI Multiparameter Meter. Lastly, upon release back into the ponds reflex impairment (RAMP) was scored on a scale from 0 (no reflexes present) to 3 (all reflexes present). Reflexes observed included ability to maintain equilibrium, ability to descend the water column, and if the fish burst away with speed upon release. RAMP scores have been positively correlated with mortality rates in other fish species (Davis and Ottmar, 2006). After Musky were processed and data was collected, fish were then released back into the pond and observed for a period of 2 weeks. If the fish perished during this 2-week observation period than that death was attributed to the angling event.
+  
+Variable Descriptions
+
+  Our response variable was mortality, a categorical variable being dead or alive. We assumed the mortality response was a binomial random variable. Mortality was coded as a dummy variable; 0 = Alive and 1 = Dead. The ponds were checked daily to identify any fish that perished. Those fish were then recovered from the pond and scanned for a PIT Tag to see if they could be tied to an angling event.
+Hooking location, sex, and RAMP scores are categorical predictor variables. Temperature, angling times, length, weight, and age are continuous predictor variables. Water temperature was recorded at the time the fish was angled utilizing a YSI Multiparameter Meter. Angling duration was broken into fight, net, and time out of water. Times were recorded post angling event by reviewing the catch videos for each event. Fight time was the time spent angling the fish. Net time was the time the fish spent in the catch net during dehooking and data collection. Time out of water was the time the fish was held out of the water during handling. Length was recorded in millimeters(mm) at time of fish collection. Weight was recorded in kilograms(kg) at time of fish collection. Age was noted by processing and analyzing fin ray spines in accordance with Crane et al. 2020. Fin ray spines were removed from fish at time of collection. RAMP scores are on a scale of 0 – 3. They mark the presence/absence of 3 separate reflex responses (0 = no reflexes present, 3 = all reflexes present). Hooking location was noted at time of catch as being in the Esophagus (E), Gills (G), Tongue (T), or Mouth/Lips (L). Due to the phenomenon of separation in logistic regression models we had to combine the individuals hooked in the esophagus and in the gills (E and G). Because hooking in the esophagus is associated with only 1 outcome (dead) we observe this separation phenomenon (Zeng & Zeng, 2019). To combat this, we combined the E + G locations into 1 group as they are both considered damaging among anglers and result in similar injuries. 
+
+Statistical Model
+
+  We utilized R, through R Studio, to fit binomial regression models to our data set (R Core Team, 2021; 203 R Version 4.0.3; RStudio Team, version 1.2.5033). Using package “stats” and function “glm” allowed us fit a generalized linear model of type binomial using a log-odds link function. We set out to evaluate the probability of catch-and-release mortality in Muskellunge across a range of temperatures, angling durations, sizes, ages, and hooking locations. Plots will be created utilizing packages “ggplot” and “sjPlot” (Ludecke, 2021; Wickham, 2016).
+Our response variable was mortality, a categorical variable being dead or alive. We assumed the mortality response was a binomial random variable. y¬i denotes mortality post catch release event for each fish i, and is coded as a dummy variable, 0 = Alive and 1 = Dead.  We modeled this as a binomial random variable: yi ∼ Binom(0, 1).
+
+  We modeled mortality probability as a function of predictor variables water temperature, angling durations (fight/net), length, weight, age, RAMP score, and hooking location.  We built 24 models that assumed response was a function of additive and interactive relationships between our predictor variables (x1, x2, x3… x9), examples expressed below:
+
+Additive: yi = β0 + β1(x1) + β2(x2) + β3(x3) +…. Β9(x9)
+
+Interactive: yi = β0 + β1(x1) + β2(x2) + β3(x1 * x2) 
+
+```{r include=FALSE}
+### Build Candidate Models for AIC 
+TempModel <- glm(y ~ Temp, family = binomial, data = data)
+FightModel <- glm(y ~ FightTime, family = binomial, data = data)
+Fight2 <- glm(y ~ Temp * FightTime, family = binomial, data = data)
+Fight3 <- glm(y ~ Temp + FightTime, family = binomial, data = data)
+HandlingModel <- glm(y ~ NetTime, family = binomial, data = data)
+Handling2 <- glm(y ~ Temp * NetTime, family = binomial, data = data)
+Handling3 <- glm(y ~ Temp + NetTime, family = binomial, data = data)
+Total <- glm(y ~ TotalTime, family = binomial, data = data)
+Total2 <- glm(y ~ TotalTime + Temp, family = binomial, data = data)
+Total3 <- glm(y ~ TotalTime * Temp, family = binomial, data = data)
+SizeModel <- glm(y ~ Length + Weight, family = binomial, data = data)
+AgeModel <- glm(y ~ Age, family = binomial, data = data)
+SexModel <- glm(y ~ Sex, family = binomial, data = data)
+FightNet <- glm(y ~ Temp * NetTime + FightTime, family = binomial, data = data)
+FightNet2 <- glm(y ~ Temp * FightTime + NetTime, family = binomial, data = data)
+HookLocation <- glm(y ~ HookLocation, family = binomial, data = data)
+Hook <- glm(y ~ Temp + HookLocation, family = binomial, data = data)
+Hook2 <- glm(y ~ Temp * HookLocation, family = binomial, data = data)
+Hook3 <- glm(y ~ TotalTime + HookLocation, family = binomial, data = data)
+Hook4 <- glm(y ~ TotalTime * HookLocation, family = binomial, data = data)
+Combine <- glm(y ~ Temp * TotalTime + HookLocation, family = binomial, data = data)
+Combine2 <- glm(y ~ Temp * HookLocation + TotalTime, family = binomial, data = data)
+Exp <- glm(y ~ Temp * FightTime * NetTime, family = binomial, data = data)
+Exp2 <- glm(y ~ Temp * TotalTime * HookLocation, family = binomial, data = data)
+```
+
+Hypothesis Testing
+
+  The Wald Test was used for null hypothesis testing to confirm that our explanatory predictor variables are significant and to reject the null hypothesis that our coefficients are equal to zero (Wald, 1943). We used an α-level = 0.05 to determine significance. 
+Hooking Location and RAMP score
+
+  Because identifying hooking location and scoring reflex impairment (RAMP) can be done quickly and cheaply in the field, it is important to identify whether these variables can be accurate predictors of mortality. We will accomplish this be running ANOVA tests utilizing package “stats” and function “aov” to identify any significant relationships. Any significant relationship will be further analyzed using Post-Hoc Analysis with Tukey’s Test utilizing function “TukeyHSD” in package “stats”. This will allow us to see if significant differences between groups based off Hooking Location and RAMP scores (R Core Team, 2021).
+
+Fish Summary Statistics
+
+  We had a sample size of n = 50 for our experimental angling treatments and a sample size of n = 50 for our control fish. Muskellunge from both groups experienced temperatures between 18°C and 32.5°C in the ponds. Muskellunge were angled at temperatures between 24.2°C and 32.22°C. Caught and released Muskellunge lengths ranged from 784mm to 1198mm, and weights from 3.06kg to 14.22kg. All fish that were caught at temperatures >29.3°C perished. Mortality rates for the experimental group were 40% and control mortality rates were 6%. Differences in mortality rates between experimental and control groups were significant (ANOVA test, p-value = 0.00003). 
+
+
+```{r ANOVA, echo=FALSE}
+#group into experimental and control groups, get summary statistics
+
+library(dplyr)
+group_by(groupmort, group) %>%
+  summarise(
+    count = n(),
+    mean = mean(ï..y, na.rm = TRUE),
+    sd = sd(ï..y, na.rm = TRUE)
+  )
+## compare independent means of mortality rates between experimental and control groups
+anovatest3 <- aov(ï..y ~ group, data = groupmort)
+summary(anovatest3)
+```
+
+Model Selection
+
+The model with the lowest AIC score and highest cumulative weight was a binomial regression where mortality is a function of total angling duration interacting with water temperature. The top model had an AIC score of 31.88 and a cumulative model weight of 31% and is expressed below:
+
+TopModel <- glm(yi ∼ Temperature * Total Time, family = binomial, data = data)
+
+
+yi = -235.70 + 7.91(Temperature) + 0.90 (Total Time) – 0.03(Temperature * Total Time)
+
+```{r include=FALSE}
+#Model Selection Using AIC
+AICc(mod = TempModel, second.ord = F)
+```
+
+```{r AIC selection, echo = FALSE}
+cand.set <-list(
+  M1 = TempModel, M2 = FightModel, M3 = Fight2, M4 = Fight3, M5 = HandlingModel, 
+  M6 = Handling2, M7 = Handling3, M8 = Total, M9 = Total2, M10 = Total3, M11 = SizeModel,
+  M12 = SexModel, M13 = AgeModel, M14 = FightNet2, M15 = FightNet, M16 = HookLocation, M17 = Hook,
+  M18 = Hook2, M19 = Combine, M20 = Combine2, M21 = Hook3, M22 = Hook4, M23 = Exp, M24 = Exp2
+)
+
+#AIC Comparison Table
+mods <- aictab(cand.set = cand.set, second.ord = F)
+mods
+```
+
+Model Results
+
+The Wald Test confirms that our predictor variables of temperature and total time are significant and that we reject the null hypothesis that our coefficient estimates for our corresponding predictor variables are equal to 0. Temperature slope coefficient is 7.91 and with a Wald Test p-value of 0.0265, at an α-level = 0.05, we reject the null hypothesis. Angling Total Time has a slope coefficient estimate of 0.90 and Wald Test p-value of 0.0473, at an α-level = 0.05 we reject the null hypothesis. Our interaction between Temperature and Total Time had a coefficient estimate of -0.03 and a Wald Test p-value of 0.0575, at an α-level = 0.05 we fail to reject the null hypothesis (Table 1). 
+
+
+Table 1. Summary statistics from our Top Model chosen by AIC showing Mortality as a function of Temperature and Total Time. CI denotes 95% confidence intervals and p is the Wald Test p value.
+```{r, echo = FALSE}
+#Summary staistics table for fitted model
+summary(Total3)
+```
+
+  We found evidence that probability of mortality increases as water temperature increases. The results of our model tell us that for every 1 unit increase in Water Temperature (°C) we see a 7.91 increase in the log-odds of mortality in caught-and-released Muskellunge (Table 1). Figure 1 shows the expected log odds over a range of temperatures when total time is fixed at its mean. When angling time is held constant at its mean (180.28 seconds) there is a drastic increase in the probability of catch-and-release mortality once temperatures exceed 28°C (Figure 1). When angling time is held at its mean (180.28 sec) and water temperatures >30°C the probability of mortality is >90% virtually guaranteeing Muskellunge caught at temperatures >30°C will perish. Figure 2 illustrates the effect that water temperature has on mortality across a variety of angling durations. Lower total angling time is associated with a lower mortality probability, however, even at low total angling times we still see mortality probabilities >90% once water temperatures exceed 30°C (Figure 2).
+
+```{r, echo = FALSE}
+##Top Model
+fit <- glm(y ~ Temp * TotalTime, family = binomial, data = data)
+summary(fit)
+#### Plot effect of Temperature on log odds ratio when Total Time is fixed at its mean
+df2 <- data.frame(
+  Temp = seq(min(data$Temp), max(data$Temp), length.out = 100),
+  TotalTime = mean(data$TotalTime)
+  )
+
+prd2 <-predict.glm(object = fit, newdata = df2, se.fit = T)
+lower2 <- plogis(prd2$fit - qnorm(0.975) * prd2$se.fit)
+upper2 <- plogis(prd2$fit + qnorm(0.975) * prd2$se.fit)
+
+y2 <- plogis(prd2$fit)
+x2 <- df2$Temp
+
+plot(y = y2, x = x2, xlab = 'Temperature (Celsius)', ylab = 'Log Odds Ratio',
+     cex.axis = 1.5, cex.lab = 1.5, ylim = c(0, 1))
+lines(x = df2$Temp, y = lower2, lty = 2)
+lines(x = df2$Temp, y = upper2, lty = 2)
+
+```
+
+Figure 1. Probability of mortality over a range of temperatures when total angling time is fix at its mean (180.28 sec). Dashed lines represent ±95% confidence intervals.
+
+```{r, echo = FALSE}
+ #### Plot prob. of mortality over a range of temps when time is fixed at its quartiles (137.2, 180.3, 223.3) 
+ plot_model(fit, type = "int", mdrt.values = "all", axis.title = "Mortality", ci.lvl = .95,
+            title = "Predicted Prob. of Mortality")
+```
+
+Figure 2. Predicted probability of mortality over a range of temperatures when total angling time is fixed at its quartiles. Shaded areas represent ±95% confidence intervals.
+
+  We also found evidence that probability of mortality increases as total angling duration increases. Our model tells us that for every 1 unit increase in Total Time (angling duration) we see a 0.90 increase in the log odd of Mortality (Table 1). Like temperature, when looking at the effects of angling duration on mortality we see that as angling duration increases so does the probability of mortality. When water temperature at time of catch is held at its mean Angling duration starts to become increasingly dangerous for Muskellunge once it exceeds 180 second(Figure 3). Figure 4 illustrates how total angling time effects mortality probabilities over a range of temperatures. Lower water temperatures result in negligible catch and release mortality rates when angling time is <210 seconds. When water temperatures are high (>29.72) then our model suggests there is high probability of mortality (>70%) regardless of angling duration (Figure 4). When angling duration is greater than 250 seconds then our probability of mortality is >75% regardless of water temperature (Figure 4).  Our 95% confidence intervals when temperatures are >29.72 are quite high since we have a small sample size, and few fish were caught at these temperatures. Repeated experiments can help to narrow the sample variance and better represent probability of mortality when water temperature is >29.72.
+
+```{r, echo = FALSE}
+#### Plot effect of Total Time on log odds ratio when Temperature is fixed at its mean
+
+df <- data.frame(
+  TotalTime = seq(min(data$TotalTime), max(data$TotalTime), length.out = 100),
+  Temp = mean(data$Temp)
+  )
+
+prd <-predict.glm(object = fit, newdata = df, se.fit = T)
+lower <- plogis(prd$fit - qnorm(0.975) * prd$se.fit)
+upper <- plogis(prd$fit + qnorm(0.975) * prd$se.fit)
+
+y <- plogis(prd$fit)
+x <- df$TotalTime
+
+plot(y = y, x = x, xlab = 'Angling Duration (sec)', ylab = 'Log Odds Ratio', 
+     cex.axis = 1.5, cex.lab = 1.5, ylim = c(min(lower), max(upper)))
+lines(x = df$TotalTime, y = lower, lty = 2)
+lines(x = df$TotalTime, y = upper, lty = 2)
+```
+
+Figure 3. Predicted probability of mortality over a range of total angling times when temperature is fixed at its mean (27.8°C). Dashed line represents ±95% confidence intervals.
+
+```{r, echo = FALSE}
+##### Plot Probability of Mortality over a range of time when temperature is fixed at its quartiles (25.87, 27.8, 29.72)
+fit3 <- glm(y ~ TotalTime * Temp, family = binomial, data = data)
+
+ plot_model(fit3, type = "int", mdrt.values = "all", axis.title = "Motality", ci.lvl = .95,
+            title = "Predicted Prob. of Mortality", legend.title = "Temp (Cesius)")
+
+```
+
+Figure 4. Predicted probability of mortality across a range of angling durations when temperature at time of catch is fixed at its quartiles. Shaded regions represent ±95% confidence intervals.
+
+Hooking Location and RAMP score
+
+  While the predictor variable of Hooking Location and RAMP score were not included in the top model chosen through AIC, it is still worth analyzing their effectiveness for predicting mortality. This is because hooking location and RAMP score are easy to measure and note in the field. If these variables are significantly related to mortality probability, then they can be utilized by anglers/managers to quickly determine likelihood of mortality in the field. 
+  
+  We identified no significant relationships between RAMP and mortality (ANOVA test, p = .226). We did find a significant relationship between Hooking Location and mortality (ANOVA test, p = .00134). A Post-Hoc Turkeys Analysis reveals the significant differences between groups categorized by hooking location Gill/Esophagus, Lips/Mouth, and Tongue. There is only 1 significant difference between fish hooked in the Gill/Esophagus and fish hooked in the Lips/Mouth (TukeyHSD test, p = .0009). This tell us that there is a higher likelihood for fish to perish if they are hooked in the Gill/Esophagus rather than if they are hooked in the Lips/Mouth. Hooking fish in the gill/esophagus has been associated with an increased probability of mortality during catch-and-release of Muskellunge.
+
+```{r, echo = FALSE}
+##### Assessing Effectiveness of Hook Location to predict mortality
+anovatest <- aov(y ~ HookLocation, data = data)
+summary(anovatest)
+tukey.test <- TukeyHSD(anovatest)
+tukey.test
+```
+Conclusions
+
+  In order to reduce the probability of catch-and-release mortality in Muskellunge anglers should aim to angle/handle the fish in as fast a manner as possible, and at temperatures <28°C. The faster a fish is angled then returned to the water and the lower the water temperature is at time of catch will result in a decreased probability of mortality. Fisheries managers should consider placing restrictions on Muskellunge angling during summer months if water temperatures exceed 28°C. As it currently stands, most Musky Anglers stop fishing for musky once water temperature reach 26.67°C due to anecdotal reports of increased mortality above this temperature. This is the first study to finally put some numbers to that sentiment and confirm that increased water temperatures to increase mortality rates in Muskellunge.
+  
+  Anglers have little to no control over the hooking location of an angled fish. That is more dependent of how may hooks the lure has and the angle of attack by the fish. We noted an increased probability of mortality when fish are hooked in the gills/esophagus. In order to avoid wanton waste and needlessly harming Muskellunge, the researchers suggest fish hooked in the gills/esophagus be harvested by anglers. The probability that the fish will go on to perish after being hooked in the gills is high and it is this researchers’ opinion that those fish would serve a better purpose being harvested and eaten rather than thrown back to potentially die and rot. 
+Overall increases in water temperature at time of catch and total angling time will result in increased probability of mortality.
+
+References
+
+
+  Akaike, H. (1973). Information theory and an extension of the maximum likelihood principle. In B. N. Petrov & F. Csáki (Eds.), 2nd international symposium on information theory (pp. 267–281).
+  
+  Crane, D.P., Cornett, M.R., Bauerlien, C.J., Hawkins, M.L., Isermann, D.A., Hansbarger, J.L., Kapuscinski, K.L., Meerbeek, J.R., Simonson, T.D. and Kampa, J.M., 2020. Validity of age estimates from muskellunge (Esox masquinongy) fin rays and associated effects on estimates of growth. Canadian Journal of Fisheries and Aquatic Sciences, 77(1), pp.69-80.
+  
+  Davis, M.W., Ottmar, M.L., 2006. Wounding and reflex impairment may be predictors for mortality in discarded or escaped fish. Fish. Res. 82, 1–6
+  
+  Frohnauer, N.K., Pierce, C.L., Kallemeyn, L.W., 2007. Population dynamics and angler exploitation of the unique muskellunge population in Shoepack Lake, Voyageurs National Park, Minnesota. N. Am. J. Fish. Manage. 27, 63–76.
+  
+  Kerr, S.J. 2007a. Characteristics of Ontario muskellunge (Esox masquinongy) fisheries based on volunteer angler diary information. Env. Biol. Fish. 79, 61–69.
+  Landsman, S.J., 2008. Blending science and proper handling practices for a better release. Muskie 42, 15–17.
+  
+  Landsman, S. J., Wachelka, H. J., Suski, C. D., & Cooke, S. J. (2011). Evaluation of the physiology, behaviour, and survival of adult muskellunge (Esox masquinongy) captured and released by specialized anglers. Fisheries Research, 110(2), 377-386.
+  
+  Lüdecke D (2021). sjPlot: Data Visualization for Statistics in Social Science. R package version 2.8.7, <URL https://CRAN.R-project.org/package=sjPlot>.
+  
+  Marc J. Mazerolle (2020) AICcmodavg: Model selection and multimodel inference based on (Q)AIC(c). R package version 2.3-1. https://cran.r-project.org/package=AICcmodavg.
+  
+  R Core Team (2020). R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. URL https://www.R-project.org/.
+  
+  Strand, R.F., 1986. Identification of principal spawning areas and seasonal distribution and movements of muskellunge in Leech Lake Minnesota. In: Hall, G.E. (Ed.), Managing Muskies. American Fisheries Society Special Publication (15): Bethesda, Maryland. pp. 62–73.
+  
+  Wald, A., 1943. Tests of statistical hypotheses concerning several parameters when the number of observations is large. Transactions of the American Mathematical society, 54(3), pp.426-482.
+  
+  Wickham H.  (2016). ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York.
+  
+  Zeng, G. and Zeng, E., 2019. On the relationship between multicollinearity and separation in logistic regression. Communications in Statistics-Simulation and Computation, pp.1-9.
+
+
+
