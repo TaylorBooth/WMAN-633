@@ -1,0 +1,144 @@
+---
+title: "Homework 8"
+author: "Taylor Booth"
+date: "April 10, 2021"
+output: html_document
+---
+1. Load data and place into an unmarkedFrameOccu object
+```{r, echo = T}
+
+library('unmarked')
+
+bobcat <-read.csv("Bobcat.csv")
+head(bobcat)
+
+p_covs <-read.csv("p covariates.csv")
+head(p_covs)
+
+psi_covs <-read.csv("psi covariates.csv")
+head(psi_covs)
+
+p_covs <-list(
+  people = data.frame(p_covs))
+
+occu_data <-unmarkedFrameOccu(y = bobcat,
+                              siteCovs = psi_covs,
+                              obsCovs = p_covs)
+```
+
+2. Fit the following candidate set of models:
+detection model  occupancy model
+intercept-only   intercept-only
+people           intercept-only
+intercept-only   disturbance
+people           disturbance
+
+ 
+```{r, echo = T}
+
+library('AICcmodavg')
+fit_1 <- occu(~1 ~1, data = occu_data)
+fit_2 <- occu(~people ~1, data = occu_data)
+fit_3 <- occu(~1 ~Dist_5km, data = occu_data)
+fit_4 <- occu(~people ~Dist_5km, data = occu_data)
+
+```
+
+3. Perform model selection with AIC. What is your top model? How do you know? Is there model selection uncertainty?
+``` {r, echo = T}
+
+cand.set <- list(
+  F1 = fit_1, F2 = fit_2, F3 = fit_3, F4 = fit_4
+)
+
+mods <-aictab(cand.set = cand.set, second.ord = F)
+head(mods)
+
+```
+
+
+My top model is model 3; detection set to intercept-only and occupancy set to disturbance. It has the lowest AIC value (Akaike's information criterion), a delta AIC of 0, and a cumulative model weight of 73%. Our selection uncertainty is very low due to the small number of parameters used.
+
+
+
+4. Average both the effect of people on detection, and disturbance on occupancy, over all models. Report model-averaged slope coefficients and 95% confidence intervals.
+
+```{r, echo = T}
+
+avg_people <-modavgShrink(cand.set = cand.set,
+                          parm = 'people',
+                          second.ord = F,
+                          parm.type = 'detect')
+
+#mode average and 95% interval
+avg_people$Mod.avg.beta
+avg_people$Lower.CL
+avg_people$Upper.CL
+
+avg_disturbance <-modavgShrink(cand.set = cand.set,
+                               parm = 'Dist_5km',
+                               second.ord = F,
+                               parm.type = 'psi')
+
+##model average slope coefficient and 95% CI for disturbance occupancy 
+avg_disturbance$Mod.avg.beta
+avg_disturbance$Lower.CL
+avg_disturbance$Upper.CL
+
+
+```
+
+5. Obtain and plot model-averaged predictions of occupancy probability and detection probability. Average over all models, and make predictions over the observed range of each variable.
+```{r, echo = T}
+##detection probability
+summary(occu_data)
+min_people <- 0.0
+max_people <-5.6
+
+new_df <- data.frame(
+  people = seq(from = min_people, to = max_people, length.out = 100)
+)
+
+avg_predictions <- modavgPred(cand.set = cand.set,
+                              newdata = new_df,
+                              second.ord = F,
+                              parm.type = 'detect')
+
+avg_predictions
+
+plot(y = avg_predictions$mod.avg.pred,
+     x = seq(from = min_people, to = max_people, length.out = 100),
+     xlab = "Number of People / 100", ylab = "Detection Probability",
+     cex.axis = 1.5, cex.lab = 1.5, type = 'l', ylim = c(0,1))
+lines(y = avg_predictions$lower.CL,
+      x = seq(from = min_people, to = max_people, length.out = 100),
+      lty = 2)
+lines(y = avg_predictions$upper.CL,
+      x = seq(from = min_people, to = max_people, length.out = 100),
+      lty = 2)
+
+##occupancy Probability
+
+new_df2 <- data.frame(
+  Dist_5km = seq(from = min(psi_covs$Dist_5km), to = max(psi_covs$Dist_5km), length.out = 100)
+)
+
+avg_pred_occu <- modavgPred(cand.set = cand.set,
+                              newdata = new_df2,
+                              second.ord = F,
+                              parm.type = 'psi')
+
+avg_pred_occu
+
+plot(y = avg_pred_occu$mod.avg.pred,
+     x = seq(from = min_people, to = max_people, length.out = 100),
+     xlab = "Proportion of Area within 5km of Disturbance", ylab = "Occupancy Probability",
+     cex.axis = 1.5, cex.lab = 1.5, type = 'l', ylim = c(0,1))
+lines(y = avg_pred_occu$lower.CL,
+      x = seq(from = min_people, to = max_people, length.out = 100),
+      lty = 2)
+lines(y = avg_pred_occu$upper.CL,
+      x = seq(from = min_people, to = max_people, length.out = 100),
+      lty = 2)
+
+```
