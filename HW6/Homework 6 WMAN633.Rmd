@@ -1,0 +1,110 @@
+---
+title: "Homework 6"
+author: "Ian Taylor Booth"
+date: "April 12, 2021"
+output: html_document
+---
+
+1. Load data and place into an unmarkedFramePCount object
+```{r, echo = T}
+library(unmarked)
+
+count <-read.csv("count.csv")
+obs_covs <-read.csv("obs_covs.csv")
+site_covs <-read.csv("site_covs.csv")
+
+
+count_mat <-as.matrix(count)
+det_covs <-list(js = obs_covs)
+nmix_data <-unmarkedFramePCount(y = count_mat,
+                                obsCovs = det_covs,
+                                siteCovs = site_covs)
+```
+2. Fit an N-mixture model that assumes conditional detection probability is a function of the detection covariate provided, and expected abundance is a additive function of variables x1 and x2.
+
+```{r, echo = T}
+
+fit <- pcount(formula = ~js ~x1 + x2, 
+              data = nmix_data, K = 100)
+
+summary(fit)
+```
+
+3. Interpret the e???ect of x1 on the expected count at each site. Verity your interpretation in R
+
+```{r, echo = T}
+betas <-coef(fit)
+betas
+
+x1 <-betas[1] + betas[2] * 1 + betas[6] + betas[7]
+x1ii <-betas[1] + betas[2]*2 + betas[6] +betas[7]
+
+log(exp(x1ii)/exp(x1))
+
+betas[2]
+
+##For every 1 unit increase in x1 there is a .3696 increase in log odds 
+
+```
+4. Predict and plot the effect of the supplied detection covariate. Do this over the range of this covariate.
+```{r, echo = T}
+njs <-data.frame(
+  js = seq(from = min(obs_covs$j1, obs_covs$j2, obs_covs$j3),
+             to = max(obs_covs$j1, obs_covs$j2, obs_covs$j3), length.out = 100))
+  
+  
+js_min <-min(obs_covs$j1, obs_covs$j2, obs_covs$j3)
+js_max <-max(obs_covs$j1, obs_covs$j2, obs_covs$j3)
+
+range = seq(from = js_min, to = js_max, length.out = 100)
+  
+pred <- predict(object = fit, newdata = njs, type = 'det')
+pred 
+
+
+plot(y = pred$Predicted, 
+     x = seq(from = js_min, to = js_max, length.out = 100),
+     ylim = c(0,1),
+     xlab = 'Detection covariate',
+     ylab = 'Detection Probability',
+     type = 'l')
+lines(x = range, y = pred$lower, lty = 2)
+lines(x = range, y = pred$upper, lty = 2)
+
+
+```
+5. Use contrasts to compare expected abundance between all pairwise levels of variable x2. Obtain p-values associated with each contrast and tell me whether you reject or fail to reject each null hypothesis tested.
+```{r, echo = T}
+pbeta <- betas[1:5]
+
+x <-matrix(
+  c(0,0,1,0,0,
+    0,0,0,1,0,
+    0,0,0,0,1,
+    0,0,-1,1,0,
+    0,0,-1,0,1,
+    0,0,0,-1,1),
+  nrow = 6, byrow = T
+)
+
+x
+
+con <- x %*% pbeta
+
+vcovcon <- x %*% vcov(fit)[1:5, 1:5] %*% t(x)
+vcovcon
+
+
+secon <- sqrt(diag(vcovcon))
+secon
+
+w <-con[,1]/secon
+w
+pvalues <- 2*pnorm(-1*abs(w))
+
+pvalues
+
+# Null Hypothesis = No change in pairwwise levels of variable x2 for the following levels:
+#a/b: fail to reject, a/c: fail to reject, a/d: reject, b/c: fail to reject, b/d: reject, c-d: reject
+
+```
