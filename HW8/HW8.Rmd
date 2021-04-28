@@ -1,0 +1,73 @@
+---
+title: "Homework 8"
+author: "Ian Taylor Booth"
+date: "4/28/2021"
+output: html_document
+---
+
+1. Fit an N-mixture model that assumes abundance is a function of wetland size and type, and detection
+probability is a function of sky and time
+
+```{r, echo = T}
+
+library(unmarked)
+y <- read.csv("sosp_nmix.csv")
+site_covs <- read.csv("n_covs_nmix.csv")
+p_covs <- read.csv("p_covs_nmix.csv")
+
+det_covs <- list(
+  time = data.frame(p_covs[, c('time.1', 'time.2')]),
+  sky = data.frame(sky.1 = factor(p_covs$sky.1),
+                   sky.2 = factor(p_covs$sky.2))
+)
+
+site_covs$herb <- factor(site_covs$herb)
+site_covs$shrub1 <- factor(site_covs$shrub1)
+site_covs$bareground <- factor(site_covs$bareground)
+site_covs$shrub5 <- factor(site_covs$shrub5)
+
+nmix_data <- unmarkedFramePCount (y = as.matrix(y),
+                                 siteCovs = site_covs,
+                                 obsCovs = det_covs)
+
+fit <- pcount(~ sky + time ~ size + type, nmix_data, K = 100)
+
+```
+
+2. Write a function that calculates the sum of squared Pearson residuals from a fitted model.
+```{r, echo = T}
+
+fitstats <- function(fit)
+  { 
+  obs <- getY(fit) 
+  ex <- fitted(fit) 
+  det <- predict(fit, type = "det")
+  dm <- matrix(det$Predicted, byrow = TRUE, ncol = 2)
+  ts <- (obs - (ex)) ^ 2 /  ((ex) * (1 - dm))
+  return(sum(ts))
+}
+
+```
+
+3. Use the parboot() function in R to simulate the distribution of this test statistic under the assumption
+that your fitted model is the data-generating model. Simulate 1000 values of the test statistic. Note
+that this may take several minutes
+
+```{r, echo = T}
+pb <- parboot(fit, fitstats, nsim=1000)
+pb
+
+```
+
+4. Plot the distribution of the simulated test statistic. Include in this plot the value of your test statistic
+calculated from your fitted model. What is the null hypothesis you are testing when conducting model
+checking? Do you reject or fail to reject this null hypothesis? What are the implications for how well
+you model fits the data
+
+Answer: The null hypothesis for model checking is testing whether our model is an accurate fit of the data; or the null hypothesis is checking whether our test statistic is less than our vector of bootstrap samples. H0 : t_B ≥ t0. Because our test statistic is greater than our t_B we reject the null hypothesis. Because we reject the null (our model fits the data) we can say that our fitted model is innacurate and that abudance is not a function of wetland size and type and detection probablity is a not a function of sky and time.
+
+```{r, echo = T}
+plot(pb)
+
+```
+
