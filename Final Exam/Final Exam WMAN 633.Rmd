@@ -1,0 +1,211 @@
+---
+title: "Final Exam"
+author: "Ian Taylor Booth"
+date: "May 5, 2021"
+output: html_document
+---
+
+1. Describe a sampling procedure that may have given rise to this dataset.
+
+Answer: Visit N = 100 site. At each site conduct 3 replicate surveys. During each survey count the number of inidividuals detected.
+        At each site record abundance covariate x1 and x2 once per site. Durign each replicate survey record the detection covariate obscov1 and 
+        obscov2.
+        
+        
+        
+2. Import data and fit an occupancy model that assumes detection probability is an additive function of
+obscovs1 and obscovs2; and that occupancy probability is an additive function of x1 and x2.
+
+```{r, echo = T}
+library(unmarked)
+detect <- read.csv("detect.csv")
+
+sitecovs <- read.csv("sitecovs.csv")
+obs1 <- read.csv("obscovs1.csv")
+obs2 <- read.csv("obscovs2.csv")
+
+occudat <- unmarkedFrameOccu( y = detect,
+                             siteCovs = sitecovs,
+                             obsCovs = list(
+                               obs1 = obs1,
+                               obs2 = obs2
+                             ))
+
+fit <- occu(formula = ~obs1 + obs2 ~ x1 + x2,
+            data = occudat)
+summary(fit)
+```
+
+
+
+3. Use contrasts to determine if occupancy probability different when x1 = 2 vs. when x1 = -2?
+
+Answer: Occupancy probablity is -0.59 when x1 = 2, and 0.56 when x1 = -2. There is a difference in occupancy probablities
+
+```{r, echo = T}
+#site intercept when x1 = 0
+##y = b0 * 2 + b1(x1) * 2 + b2(x2) * 1 + b3 + b4(obs1) * 1 + b5(obs2) * 1
+##y = b0 * -2 + b1(x1) * -2 + b2(x2) * 1 + b3 + b4(obs1) * 1 + b5(obs2) * 1
+
+betas <- coef(fit)
+betas
+
+#when x1 = 2
+xi <- betas[1] * 2 + betas[2] * 2 + betas[3] * 1
+xii <- betas[1] * 1 + betas[2] * 1 + betas[3] * 1
+xi
+xii
+
+log(plogis(xi)/plogis(xii))
+
+#when x1 = -2
+xo <- betas[1] * -2 + betas[2] * -2 + betas[3] * 1
+xoo <- betas[1] * 1 + betas[2] * 1 + betas[3] * 1
+xo
+xoo
+
+log(plogis(xo)/plogis(xoo))
+```
+
+
+
+4. Use model selection to compare the following 4 models. Which model is the "top" model? How do you
+know?
+(a) ∼ obscovs1 + obscovs2 ∼ x1 + x2
+(b) ∼ obscovs1 + obscovs2 ∼ x1
+(c) ∼ obscovs1 + obscovs2 ∼ x2
+(d) ∼ obscovs1 + obscovs2 ∼ 1
+
+
+Answer: The top model from the above list is model (c) ~ obscovs1 + obscovs2 ~ x2. This model has the lowest AIC score and Delta AIC = 0.
+        There is some model uncertainty however as the model (a) has a similarily low AIC score and a delta AIC = .29. 
+        Model averaging may be appropriate.
+
+```{r, echo = T}
+library(AICcmodavg)
+
+fit1 <- occu(~ obs1 + obs2 ~x1 + x2, data = occudat)
+fit2 <- occu(~ obs1 + obs2 ~x1, data = occudat)
+fit3 <- occu(~ obs1 + obs2 ~x2, data = occudat)
+fit4 <- occu(~ obs1 + obs2 ~1, data = occudat)
+
+sitecovs$x1
+
+cand.set <- list(
+  M1 = fit1, M2 = fit2, M3 = fit3, M4 = fit4
+)
+cand.set
+
+mods <-aictab(cand.set = cand.set, second.ord = F)
+head(mods)
+
+
+```
+
+
+5. Obtain model-averaged estimates of x1. What conclusions do you draw regarding this variable?
+
+
+Answer: Unable to get the mod_avg shring to recognize x1 as a parameter. If model averaged confidence intervals overlapped with 0
+        then we would conclude that the coefficient has a non-zero influence on detection probablity. If confidence intervals overlapped zero than
+        we would conclude the coefficients has a net 0 effect on detection probability.
+
+```{r, echo = T}
+# avg_mod <-  modavgShrink(cand.set, 'x1', second.ord = F, parm.type = 'detect')
+```
+
+
+6. Plot model-averaged predictions of how detection probability changes across the observed range of
+obscovs2.
+
+```{r, echo = T}
+#newdat <- data.frame(
+#  obs2 = c('V1','V2','V3'), length.out = 100,
+#  obs1 = rep(0, length.out = 100),
+#  x1 = rep (0, length.out = 100),
+#  x2 = rep(0, length.out = 100))
+  
+# obs2pred <- modavgPred(cand.set, newdata = newdat, second.ord = F, parm.type = 'detect')
+
+
+# plot(x = newdat$obs2, y = obs2pred$mod.avg.pred, type = 'l',
+# ylim = c(min(obs2pred$lower.CL), max(obs2pred$upper.CL)))
+# lines(x = newdat$obs2, y = obs2pred$lower.CL, lty = 2)
+# lines(x = newdat$obs2, y = obs2pred$upper.CL, lty = 2)
+
+```
+
+
+
+7. Evaluate the fit of the top model using the sum of squared Pearson’s residuals as a test statistic. A
+function for evaluating this test statistic is provided at the bottom of the exam.
+
+Answer: We have a pearsons chi squared test staistic of 309.51 indicating our model is a poor fit for predicting occupancy
+
+```{r, echo = T}
+chisq <- function(fit3){ # mod is fitted model
+obs <- getY(fit3@data) # observed
+ex <- fitted(fit3) # expected
+ts <- (ex - obs) ^ 2 / # chi-square statistic
+(ex * (1 - ex))
+return(sum(ts))
+}
+
+chisq(fit3)
+
+```
+
+8. What is the closure assumption? What are the consequences of violating the closure assumption? Tell
+me why violating the closure assumption results in these consequences.
+
+Answer: The closure assumption is that if a species is present or absent across all the replicate surveys. If  a species is detected once
+        during a survey then it is assumed to be present for every proceeding replicate survey. 
+        For the closure assumption to be valid the same number of individuals have to be present for each count/survey
+        Violating closure assumptions results in either over or underestimate occupancy probablity. Without closure the number of species
+        detections will be lower than normal and when incorporate dinto the occpancy formula the occupancy probablity will be inflated/higher than
+        normal.
+
+
+9. Assume you have variable p that is bounded between 0 and 1. Further, assume p = 0.25. What link
+function would you use to transform p to the real number line? What is the analogous vale of p = 0.25
+on the real number line?
+
+Answer: The logit link function would be used to transform p to the real number line. The analogous value for p = 0.25 would be p = -1.099
+
+```{r, echo = T}
+p <- log(0.25 / (1 - (0.25)))
+p
+```
+
+10. Assume you have a random variable that can only obtain values of 0, 1, 2, ..., ∞. What probability
+distribution might you use to model such data? What is (are) the parameter(s) of this probability
+distribution? What link function might you use if you wanted to model that parameter as a linear
+function of variables?
+
+Answer: I would use a poisson distribution. The parameter would be the rate of intensity of events, lambda > 0 with y{0,1,2,,,, inf} as support.
+        The loink function would be used to transform variables.
+        
+        
+11. Discuss null hypothesis significance testing within the context of model checking. Be sure to include
+the following phrases in your description:
+• assumptions of the null hypothesis
+• test statistic
+• p-value
+• reject or fail to reject the null hypothesis        
+
+
+Answer: 
+
+Null Hypothesis Assumptions: We assume that our fitted model is the data-generating model. We obtain p-values utilizing test statistics which 
+is usually a simulation of many chi-squared statistics, and ultimately provide us a distribution of test statistics for our model. This involves comparing expected to observed data and calculating how well our model fits. The distribution of test statistics help us determine a p-value (probability of observing a more extreme test statistic value).The p-value helps us to decide whether we reject or accept hte null hypothesis. Utilizing a significance level of 0.05 is common. P-values above 0.05 indicate that we reject the null hypothesis that our model is the data-generating model as the model is not suited for the data and shows large differences between expected and observed variables.
+        
+        
+12. interpret the coefficient β1
+
+Answer: β1 is the difference between levels "b" and "a" when x2 = 0 and x3 = 0
+
+
+13. how does the response variable change in response to a 1-unit change in x2?
+
+the response variable changes b2 units for every 1 unit increase in x2, when x1 = 0 and x3 = 0
+
